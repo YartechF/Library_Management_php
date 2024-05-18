@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 13, 2024 at 06:41 AM
--- Server version: 10.4.27-MariaDB
--- PHP Version: 8.2.0
+-- Generation Time: May 18, 2024 at 07:26 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -31,15 +31,49 @@ CREATE TABLE `books` (
   `book_id` int(11) NOT NULL,
   `title` varchar(255) NOT NULL,
   `author` varchar(255) NOT NULL,
-  `quantity_available` int(11) NOT NULL
+  `quantity_available` int(11) NOT NULL,
+  `categoryID` int(11) DEFAULT NULL,
+  `published` date DEFAULT NULL,
+  `description` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `books`
 --
 
-INSERT INTO `books` (`book_id`, `title`, `author`, `quantity_available`) VALUES
-(1, 'Alexander the Great', 'Brian', 18);
+INSERT INTO `books` (`book_id`, `title`, `author`, `quantity_available`, `categoryID`, `published`, `description`) VALUES
+(3, 'pornhub', 'javier', 44, NULL, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `borrowed_books`
+--
+
+CREATE TABLE `borrowed_books` (
+  `bookID` int(10) NOT NULL,
+  `studentID` int(10) NOT NULL,
+  `issue_date` date NOT NULL,
+  `return_date` date NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `fine_per_day`
+--
+
+CREATE TABLE `fine_per_day` (
+  `ID` int(10) NOT NULL,
+  `fines` int(10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `fine_per_day`
+--
+
+INSERT INTO `fine_per_day` (`ID`, `fines`) VALUES
+(1, 50);
 
 -- --------------------------------------------------------
 
@@ -53,16 +87,37 @@ CREATE TABLE `librarian` (
   `password` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `librarian`
+--
+
+INSERT INTO `librarian` (`librarian_id`, `username`, `password`) VALUES
+(1, 'admin', 'admin');
+
 -- --------------------------------------------------------
 
 --
--- Table structure for table `student`
+-- Table structure for table `tbl_category`
 --
 
-CREATE TABLE `student` (
-  `student_id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `card_info` varchar(100) NOT NULL
+CREATE TABLE `tbl_category` (
+  `ID` int(10) NOT NULL,
+  `name` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tlb_student`
+--
+
+CREATE TABLE `tlb_student` (
+  `ID` int(11) NOT NULL,
+  `firstname` varchar(45) NOT NULL,
+  `lastname` varchar(45) NOT NULL,
+  `address` varchar(45) NOT NULL,
+  `email` varchar(45) NOT NULL,
+  `phone` varchar(12) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -73,7 +128,14 @@ CREATE TABLE `student` (
 -- Indexes for table `books`
 --
 ALTER TABLE `books`
-  ADD PRIMARY KEY (`book_id`);
+  ADD PRIMARY KEY (`book_id`),
+  ADD KEY `categoryID` (`categoryID`);
+
+--
+-- Indexes for table `fine_per_day`
+--
+ALTER TABLE `fine_per_day`
+  ADD PRIMARY KEY (`ID`);
 
 --
 -- Indexes for table `librarian`
@@ -82,10 +144,16 @@ ALTER TABLE `librarian`
   ADD PRIMARY KEY (`librarian_id`);
 
 --
--- Indexes for table `student`
+-- Indexes for table `tbl_category`
 --
-ALTER TABLE `student`
-  ADD PRIMARY KEY (`student_id`);
+ALTER TABLE `tbl_category`
+  ADD PRIMARY KEY (`ID`);
+
+--
+-- Indexes for table `tlb_student`
+--
+ALTER TABLE `tlb_student`
+  ADD PRIMARY KEY (`ID`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -95,19 +163,41 @@ ALTER TABLE `student`
 -- AUTO_INCREMENT for table `books`
 --
 ALTER TABLE `books`
-  MODIFY `book_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `book_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `fine_per_day`
+--
+ALTER TABLE `fine_per_day`
+  MODIFY `ID` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `librarian`
 --
 ALTER TABLE `librarian`
-  MODIFY `librarian_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `librarian_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `student`
+-- AUTO_INCREMENT for table `tbl_category`
 --
-ALTER TABLE `student`
-  MODIFY `student_id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `tbl_category`
+  MODIFY `ID` int(10) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `tlb_student`
+--
+ALTER TABLE `tlb_student`
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `books`
+--
+ALTER TABLE `books`
+  ADD CONSTRAINT `books_ibfk_1` FOREIGN KEY (`categoryID`) REFERENCES `tbl_category` (`ID`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
