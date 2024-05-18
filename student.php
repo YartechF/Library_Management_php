@@ -14,7 +14,7 @@ if (!$conn) {
 function searchBooks($search_term) {
     global $conn;
     $search_term = mysqli_real_escape_string($conn, $search_term);
-    $sql = "SELECT * FROM books WHERE title LIKE '%$search_term%' OR author LIKE '%$search_term%'";
+    $sql = "SELECT books.title,books.author,books.quantity_available,tbl_category.name as category,books.published,books.description FROM books inner join tbl_category on books.categoryID = tbl_category.ID WHERE title LIKE '%$search_term%' OR author LIKE '%$search_term%'";
     $result = mysqli_query($conn, $sql);
     $books = [];
     if ($result && mysqli_num_rows($result) > 0) {
@@ -96,6 +96,9 @@ if (isset($_POST['borrow'])) {
                     <th>Title</th>
                     <th>Author</th>
                     <th>Quantity Available</th>
+                    <th>Description</th>
+                    <th>Publish</th>
+                    <th>Category</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -105,6 +108,9 @@ if (isset($_POST['borrow'])) {
                         <td><?php echo $book['title']; ?></td>
                         <td><?php echo $book['author']; ?></td>
                         <td><?php echo $book['quantity_available']; ?></td>
+                        <td><?php echo $book['description']; ?></td>
+                        <td><?php echo $book['published']; ?></td>
+                        <td><?php echo $book['category']; ?></td>
                         <td>
                             <?php if ($book['quantity_available'] > 0): ?>
                                 <form method="post">
