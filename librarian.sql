@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 18, 2024 at 07:26 AM
+-- Generation Time: May 18, 2024 at 09:07 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -42,7 +42,8 @@ CREATE TABLE `books` (
 --
 
 INSERT INTO `books` (`book_id`, `title`, `author`, `quantity_available`, `categoryID`, `published`, `description`) VALUES
-(3, 'pornhub', 'javier', 44, NULL, NULL, NULL);
+(3, 'pornhub', 'javier', 43, 1, '1993-09-01', 'n/a'),
+(4, 'Information Technology', 'ama', 45, 1, '1993-09-01', 'n/a');
 
 -- --------------------------------------------------------
 
@@ -105,6 +106,13 @@ CREATE TABLE `tbl_category` (
   `name` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `tbl_category`
+--
+
+INSERT INTO `tbl_category` (`ID`, `name`) VALUES
+(1, 'science');
+
 -- --------------------------------------------------------
 
 --
@@ -163,7 +171,7 @@ ALTER TABLE `tlb_student`
 -- AUTO_INCREMENT for table `books`
 --
 ALTER TABLE `books`
-  MODIFY `book_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `book_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `fine_per_day`
@@ -181,7 +189,7 @@ ALTER TABLE `librarian`
 -- AUTO_INCREMENT for table `tbl_category`
 --
 ALTER TABLE `tbl_category`
-  MODIFY `ID` int(10) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `tlb_student`
