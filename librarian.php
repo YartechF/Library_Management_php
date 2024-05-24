@@ -107,13 +107,18 @@ $books = getAllBooks();
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link active" href="student.php">Borrow</a> <!-- Update the href here -->
+                        <a class="nav-link active" href="student-borrow.php">Issue Book</a>
+                        <!-- Update the href here -->
                     </li>
                     <li class="nav-item">
-                        <a class="navbar-brand" href="librarian.php">Books</a>
+                        <a class="navbar-brand" href="librarian.php">Manage Book</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="student-return.php">Return Book</a>
                     </li>
                 </ul>
             </div>
+
         </div>
     </nav>
     <div class="container mt-5">

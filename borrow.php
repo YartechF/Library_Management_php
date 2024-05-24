@@ -4,14 +4,6 @@
 require_once 'config.php';
 
 
-// Connect to the database
-$conn = mysqli_connect($host, $username, $password, $database);
-
-// Check connection
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
-}
-
 // Function to search for books
 function searchBooks($search_term) {
     global $conn;
@@ -32,8 +24,14 @@ function searchBooks($search_term) {
     }
     return $books;
 }
-
 $books = [];
+$borrowerID = null;
+
+if (isset($_GET['data'])) {
+    $borrowerID = json_decode(urldecode($_GET['data']), true);
+}
+
+
 
 if (isset($_POST['search_student_by_id'])){
     
@@ -43,9 +41,9 @@ if (isset($_POST['submit'])) {
     $search_term = $_POST['search'];
     $books = searchBooks($search_term);
 }
-
+$return_date = 'now()';
 // Function to handle book borrowing
-function borrowBook($book_id, $conn) {
+function borrowBook($book_id, $conn,$borrowerID,$return_date) {
     $sql = "SELECT quantity_available FROM books WHERE book_id = ?";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, 'i', $book_id);
@@ -60,6 +58,11 @@ function borrowBook($book_id, $conn) {
             $update_stmt = mysqli_prepare($conn, $update_sql);
             mysqli_stmt_bind_param($update_stmt, 'ii', $new_quantity, $book_id);
             if (mysqli_stmt_execute($update_stmt)) {
+                $sql1 = "INSERT INTO `borrowed_books`(`bookID`, `studentID`, `issue_date`, `return_date`) VALUES (?, ?, now(), ?)";
+                $stmt1 = mysqli_prepare($conn, $sql1);
+                // Hardcoded dates replaced with placeholders
+                mysqli_stmt_bind_param($stmt1, 'iis', $book_id, $borrowerID, $return_date);
+                mysqli_stmt_execute($stmt1);
                 return true; // Borrowing successful
             } else {
                 return false; // Error updating quantity
@@ -67,6 +70,9 @@ function borrowBook($book_id, $conn) {
         } else {
             return false; // Book is out of stock
         }
+
+        
+
     } else {
         return false; // Error fetching book details
     }
@@ -75,12 +81,11 @@ function borrowBook($book_id, $conn) {
 // Handle book borrowing if the borrow form is submitted
 if (isset($_POST['borrow'])) {
     $book_id = $_POST['book_id'];
-    if (borrowBook($book_id, $conn)) {
+    if (borrowBook($book_id, $conn,$borrowerID,$return_date)) {
         echo "<script>alert('Book borrowed successfully');</script>";
-        // Refresh the book list
         $search_term = $_POST['search'];
         $books = searchBooks($search_term);
-    } else {
+    } else {    
         echo "<script>alert('Error borrowing book');</script>";
     }
 }
@@ -94,32 +99,13 @@ if (isset($_POST['borrow'])) {
     <title>Student Library Portal</title>
     <!-- Include Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="navbar-brand" href="borrow.php">IssueBook</a> <!-- Update the href here -->
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="librarian.php">ManageBook</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
     <div class="container-fluid p-3">
         <div class="row align-items-start">
             <div class="col container md-5">
-                <h2>Search Books</h2>
+                <h2>Search Books For Student ID: <?php echo $borrowerID;?></h2>
                 <form method="post">
                     <div class="form-group">
                         <label>Search</label>
@@ -178,6 +164,7 @@ if (isset($_POST['borrow'])) {
 
     <!-- Include Bootstrap JS -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Include FullCalendar JavaScript -->
 </body>
 
 </html>
