@@ -83,6 +83,7 @@ $books = getAllBooks();
 <!-- HTML code for displaying books and adding a new book -->
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Librarian Panel</title>
     <!-- Include Bootstrap CSS -->
@@ -90,12 +91,31 @@ $books = getAllBooks();
     <!-- Include jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
-        .edit-form {
-            display: none;
-        }
+    .edit-form {
+        display: none;
+    }
     </style>
 </head>
+
 <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="student.php">Borrow</a> <!-- Update the href here -->
+                    </li>
+                    <li class="nav-item">
+                        <a class="navbar-brand" href="librarian.php">Books</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
     <div class="container mt-5">
         <h2>Books</h2>
         <table class="table">
@@ -109,42 +129,44 @@ $books = getAllBooks();
             </thead>
             <tbody>
                 <?php foreach ($books as $book): ?>
-                    <tr>
-                        <td><?php echo $book['title']; ?></td>
-                        <td><?php echo $book['author']; ?></td>
-                        <td><?php echo $book['quantity_available']; ?></td>
-                        <td>
-                            <!-- Action buttons -->
-                            <button class="btn btn-sm btn-primary edit-btn" data-book-id="<?php echo $book['book_id']; ?>">Edit</button>
-                            <a href="delete_book.php?id=<?php echo $book['book_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this book?')">Delete</a>
-                        </td>
-                    </tr>
+                <tr>
+                    <td><?php echo $book['title']; ?></td>
+                    <td><?php echo $book['author']; ?></td>
+                    <td><?php echo $book['quantity_available']; ?></td>
+                    <td>
+                        <!-- Action buttons -->
+                        <button class="btn btn-sm btn-primary edit-btn"
+                            data-book-id="<?php echo $book['book_id']; ?>">Edit</button>
+                        <a href="delete_book.php?id=<?php echo $book['book_id']; ?>" class="btn btn-sm btn-danger"
+                            onclick="return confirm('Are you sure you want to delete this book?')">Delete</a>
+                    </td>
+                </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
         <div class="edit-form">
-    <h2>Edit Book</h2>
-    <form id="editForm" method="post">
-        <input type="hidden" name="book_id" id="editBookId">
-        <div class="form-group">
-            <label>Title</label>
-            <input type="text" class="form-control" name="title" id="editTitle" required>
+            <h2>Edit Book</h2>
+            <form id="editForm" method="post">
+                <input type="hidden" name="book_id" id="editBookId">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" class="form-control" name="title" id="editTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Author</label>
+                    <input type="text" class="form-control" name="author" id="editAuthor" required>
+                </div>
+                <div class="form-group">
+                    <label>Quantity Available</label>
+                    <input type="number" class="form-control" name="quantity" id="editQuantity" required>
+                </div>
+                <button type="submit" class="btn btn-primary" name="submit">Update</button>
+                <button type="button" class="btn btn-secondary cancel-btn">Cancel</button> <!-- Cancel button -->
+            </form>
         </div>
-        <div class="form-group">
-            <label>Author</label>
-            <input type="text" class="form-control" name="author" id="editAuthor" required>
-        </div>
-        <div class="form-group">
-            <label>Quantity Available</label>
-            <input type="number" class="form-control" name="quantity" id="editQuantity" required>
-        </div>
-        <button type="submit" class="btn btn-primary" name="submit">Update</button>
-        <button type="button" class="btn btn-secondary cancel-btn">Cancel</button> <!-- Cancel button -->
-    </form>
-</div>
 
-        
-        <h2 class="mt-3";>Add New Book</h2>
+
+        <h2 class="mt-3" ;>Add New Book</h2>
         <form method="post">
             <div class="form-group">
                 <label>Title</label>
@@ -170,21 +192,22 @@ $books = getAllBooks();
             var bookId = $(this).data('book-id');
             var bookData = <?php echo json_encode($books); ?>;
             var selectedBook = bookData.find(book => book.book_id == bookId);
-            
+
             $("#editBookId").val(selectedBook.book_id);
             $("#editTitle").val(selectedBook.title);
             $("#editAuthor").val(selectedBook.author);
             $("#editQuantity").val(selectedBook.quantity_available);
-            
+
             $(".edit-form").show();
         });
-        
+
         // Cancel button click event
         $(".cancel-btn").click(function() {
             $(".edit-form").hide();
         });
     });
-</script>
+    </script>
 
 </body>
+
 </html>
