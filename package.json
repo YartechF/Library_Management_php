@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bootstrap-icons": "^1.11.3",
     "html5-qrcode": "^2.3.8"
   }
 }
