@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 01, 2024 at 12:58 AM
+-- Generation Time: Jun 01, 2024 at 01:09 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -43,7 +43,7 @@ CREATE TABLE `books` (
 
 INSERT INTO `books` (`book_id`, `title`, `author`, `quantity_available`, `categoryID`, `published`, `description`) VALUES
 (3, 'bible', 'god', 25, 1, '1993-09-01', 'n/a'),
-(4, 'Information Technology', 'ama', 44, 1, '1993-09-01', 'n/a');
+(4, 'Information Technology', 'ama', 43, 1, '1993-09-01', 'n/a');
 
 -- --------------------------------------------------------
 
@@ -57,6 +57,13 @@ CREATE TABLE `borrowed_books` (
   `issue_date` date NOT NULL,
   `return_date` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `borrowed_books`
+--
+
+INSERT INTO `borrowed_books` (`bookID`, `studentID`, `issue_date`, `return_date`) VALUES
+(4, 1, '2024-06-01', '0000-00-00');
 
 -- --------------------------------------------------------
 
