@@ -69,7 +69,10 @@ $total_students_count = $row_total_students['total_students'];
 </head>
 
 <body>
+
     <div class="container py-5">
+        <h3>Dashboard</h3>
+        <br>
         <div class="row">
             <div class="col-md-4">
                 <div class="card bg-primary text-white mb-4">
