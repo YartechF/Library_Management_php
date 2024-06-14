@@ -6,10 +6,10 @@ $borrowedBooks = [];
 if (isset($_GET['data'])) {
     $borrowerID = json_decode(urldecode($_GET['data']), true);
     if ($borrowerID !== null) {
-        $sql = "SELECT books.book_id, books.title, borrowed_books.issue_date, borrowed_books.return_date 
+        $sql = "SELECT books.book_id, books.title, borrowed_books.issue_date, borrowed_books.return_date, DATEDIFF(CURRENT_DATE(), borrowed_books.issue_date) AS days_elapsed
                 FROM borrowed_books 
                 INNER JOIN books ON borrowed_books.bookID = books.book_id 
-                WHERE borrowed_books.studentID = ?";
+                WHERE borrowed_books.studentID = ? and Ispending = 0";
         $stmt = mysqli_prepare($conn, $sql);
         if ($stmt) {
             mysqli_stmt_bind_param($stmt, 'i', $borrowerID);
@@ -97,13 +97,14 @@ if (isset($_POST['return'])) {
                     <th>Title</th>
                     <th>Issue Date</th>
                     <th>Return Date</th>
+                    <th>Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($borrowedBooks)): ?>
                 <tr>
-                    <td colspan="4">No books found.</td>
+                    <td colspan="5">No books found.</td>
                 </tr>
                 <?php else: ?>
                 <?php foreach ($borrowedBooks as $book): ?>
@@ -111,6 +112,7 @@ if (isset($_POST['return'])) {
                     <td><?php echo htmlspecialchars($book['title']); ?></td>
                     <td><?php echo htmlspecialchars($book['issue_date']); ?></td>
                     <td><?php echo htmlspecialchars($book['return_date']); ?></td>
+                    <td><?php echo ($book['days_elapsed'] > 14) ? 'OverDue' : 'OnTime'; ?></td>
                     <td>
                         <form method="post">
                             <input type="hidden" name="book_id"

@@ -29,7 +29,8 @@ $borrowerID = null;
 
 if (isset($_GET['data'])) {
     $borrowerID = json_decode(urldecode($_GET['data']), true);
-}
+    
+}       
 
 
 
@@ -53,15 +54,11 @@ function borrowBook($book_id, $conn,$borrowerID,$return_date) {
         $row = mysqli_fetch_assoc($result);
         $quantity_available = $row['quantity_available'];
         if ($quantity_available > 0) {
-            $new_quantity = $quantity_available - 1;
-            $update_sql = "UPDATE books SET quantity_available = ? WHERE book_id = ?";
-            $update_stmt = mysqli_prepare($conn, $update_sql);
-            mysqli_stmt_bind_param($update_stmt, 'ii', $new_quantity, $book_id);
-            if (mysqli_stmt_execute($update_stmt)) {
-                $sql1 = "INSERT INTO `borrowed_books`(`bookID`, `studentID`, `issue_date`, `return_date`) VALUES (?, ?, now(), ?)";
+            if (true) {
+                $sql1 = "INSERT INTO `borrowed_books`(`bookID`, `studentID`,`Ispending`) VALUES (?, ?,1)";
                 $stmt1 = mysqli_prepare($conn, $sql1);
                 // Hardcoded dates replaced with placeholders
-                mysqli_stmt_bind_param($stmt1, 'iis', $book_id, $borrowerID, $return_date);
+                mysqli_stmt_bind_param($stmt1, 'ii', $book_id, $borrowerID);
                 mysqli_stmt_execute($stmt1);
                 return true; // Borrowing successful
             } else {
@@ -105,7 +102,7 @@ if (isset($_POST['borrow'])) {
     <div class="container-fluid p-3">
         <div class="row align-items-start">
             <div class="col container md-5">
-                <h2>Search Books For Student ID: <?php echo $borrowerID;?></h2>
+                <h2>Search Books</h2>
                 <form method="post">
                     <div class="form-group">
                         <label>Search</label>
