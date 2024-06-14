@@ -6,7 +6,7 @@ $borrowedBooks = [];
 if (isset($_GET['data'])) {
     $borrowerID = json_decode(urldecode($_GET['data']), true);
     if ($borrowerID !== null) {
-        $sql = "SELECT books.book_id, books.title, borrowed_books.issue_date, borrowed_books.return_date, DATEDIFF(CURRENT_DATE(), borrowed_books.issue_date) AS days_elapsed
+        $sql = "SELECT books.book_id, books.title, borrowed_books.issue_date, borrowed_books.return_date, DATEDIFF(CURRENT_DATE(), borrowed_books.return_date) AS days_overdue
                 FROM borrowed_books 
                 INNER JOIN books ON borrowed_books.bookID = books.book_id 
                 WHERE borrowed_books.studentID = ? and Ispending = 0";
@@ -28,6 +28,12 @@ if (isset($_GET['data'])) {
         echo "Invalid borrower ID.";
     }
 }
+
+// Retrieve the fine amount per day
+$sql_fine_per_day = "SELECT fines FROM fine_per_day LIMIT 1";
+$result_fine_per_day = mysqli_query($conn, $sql_fine_per_day);
+$row_fine_per_day = mysqli_fetch_assoc($result_fine_per_day);
+$fine_per_day = $row_fine_per_day['fines'];
 
 function return_book($bookID) {
     global $conn;
@@ -68,7 +74,6 @@ function return_book($bookID) {
     }
 }
 
-
 if (isset($_POST['return'])) {
     $bookID = $_POST['book_id'];
     return_book($bookID);
@@ -98,25 +103,30 @@ if (isset($_POST['return'])) {
                     <th>Issue Date</th>
                     <th>Return Date</th>
                     <th>Status</th>
+                    <th>Fines</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($borrowedBooks)): ?>
                 <tr>
-                    <td colspan="5">No books found.</td>
+                    <td colspan="6">No books found.</td>
                 </tr>
                 <?php else: ?>
                 <?php foreach ($borrowedBooks as $book): ?>
+                <?php
+                $overdue_days = max(0, $book['days_overdue']);
+                $total_fine = $overdue_days * $fine_per_day;
+                ?>
                 <tr>
                     <td><?php echo htmlspecialchars($book['title']); ?></td>
                     <td><?php echo htmlspecialchars($book['issue_date']); ?></td>
                     <td><?php echo htmlspecialchars($book['return_date']); ?></td>
-                    <td><?php echo ($book['days_elapsed'] > 14) ? 'OverDue' : 'OnTime'; ?></td>
+                    <td><?php echo ($book['days_overdue'] > 0) ? 'OverDue' : 'OnTime'; ?></td>
+                    <td>P<?php echo ($overdue_days > 0) ? $total_fine : '0'; ?></td>
                     <td>
                         <form method="post">
-                            <input type="hidden" name="book_id"
-                                value="<?php echo htmlspecialchars($book['book_id']); ?>">
+                            <input type="hidden" name="book_id" value="<?php echo htmlspecialchars($book['book_id']); ?>">
                             <button type="submit" class="btn btn-sm btn-primary" name="return">Return</button>
                         </form>
                     </td>
