@@ -102,18 +102,21 @@ if (isset($_GET['find_student'])) {
 <body>
     <div class="d-flex">
         <div class="bg-dark border-right" id="sidebar-wrapper">
-            <div class="sidebar-heading">Library Panel</div>
+            <div class="sidebar-heading">Librarian Panel</div>
             <div class="list-group list-group-flush">
                 <a href="dashboard.php" class="list-group-item list-group-item-action bg-transparent"><i
                         class="fas fa-tachometer-alt mr-2"></i>Dashboard</a>
                 <a href="librarian.php" class="list-group-item list-group-item-action bg-transparent"><i
                         class="fas fa-book mr-2"></i>Manage Books</a>
-                <a href="student-borrow.php" class="list-group-item list-group-item-action bg-transparent active"><i
+                <a href="student-borrow.php" class="list-group-item list-group-item-action bg-transparent"><i
                         class="fas fa-book-open mr-2"></i>Issue Book</a>
                 <a href="student-return.php" class="list-group-item list-group-item-action bg-transparent"><i
                         class="fas fa-undo mr-2"></i>Return Book</a>
                 <a href="addstudent.php" class="list-group-item list-group-item-action bg-transparent"><i
                         class="fa fa-plus-circle" aria-hidden="true"></i> Add Student</a>
+                <a href="?logout=true" class="list-group-item list-group-item-action bg-transparent"><i
+                    class="fas fa-sign-out-alt" aria-hidden="true"></i> Logout</a>
+                    
             </div>
         </div>
         <div id="page-content-wrapper">

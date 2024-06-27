@@ -124,7 +124,11 @@ $total_students_count = $row_total_students['total_students'];
                         class="fas fa-book-open mr-2"></i>Issue Book</a>
                 <a href="student-return.php" class="list-group-item list-group-item-action bg-transparent"><i
                         class="fas fa-undo mr-2"></i>Return Book</a>
-
+                <a href="addstudent.php" class="list-group-item list-group-item-action bg-transparent"><i
+                        class="fa fa-plus-circle" aria-hidden="true"></i> Add Student</a>
+                <a href="?logout=true" class="list-group-item list-group-item-action bg-transparent"><i
+                    class="fas fa-sign-out-alt" aria-hidden="true"></i> Logout</a>
+                    
             </div>
         </div>
         <div id="page-content-wrapper">

@@ -18,19 +18,44 @@ $studentID = $_SESSION['student_id'];
 $sql = "SELECT b.title, b.author, bb.issue_date, bb.return_date, bb.Ispending
         FROM borrowed_books bb
         JOIN books b ON bb.bookID = b.book_id
-        WHERE bb.studentID = $studentID
+        WHERE bb.studentID = ?
         ORDER BY bb.issue_date DESC";
-$result = $conn->query($sql);
+$stmt = mysqli_prepare($conn, $sql);
+mysqli_stmt_bind_param($stmt, 'i', $studentID);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+
+// Fetch categories
+$sql_categories = "SELECT ID, name FROM tbl_category";
+$result_categories = $conn->query($sql_categories);
+$categories = array();
+if ($result_categories->num_rows > 0) {
+    while($row = $result_categories->fetch_assoc()) {
+        $categories[] = $row;
+    }
+}
 
 // Function to search for books
-function searchBooks($searchTerm) {
+function searchBooks($searchTerm, $searchType, $categoryID) {
     global $conn;
-    $sql = "SELECT books.book_id, books.title, books.author, books.quantity_available, books.description, books.published
-            FROM books
-            WHERE title LIKE ? OR author LIKE ?";
+    $sql = "SELECT b.book_id, b.title, b.author, b.quantity_available, b.description, b.published
+            FROM books b
+            LEFT JOIN tbl_category c ON b.categoryID = c.ID
+            WHERE $searchType LIKE ?";
+
+    if ($categoryID != 0) {
+        $sql .= " AND c.ID = ?";
+    }
+    
     $stmt = mysqli_prepare($conn, $sql);
     $searchTerm = '%' . $searchTerm . '%';
-    mysqli_stmt_bind_param($stmt, 'ss', $searchTerm,$searchTerm);
+
+    if ($categoryID != 0) {
+        mysqli_stmt_bind_param($stmt, 'si', $searchTerm, $categoryID);
+    } else {
+        mysqli_stmt_bind_param($stmt, 's', $searchTerm);
+    }
+
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
     $books = [];
@@ -47,12 +72,13 @@ $books = [];
 // Perform search if form is submitted
 if (isset($_POST['submit'])) {
     $searchTerm = $_POST['search'];
-    $books = searchBooks($searchTerm);
+    $searchType = $_POST['searchType'];
+    $categoryID = $_POST['category'];
+    $books = searchBooks($searchTerm, $searchType, $categoryID);
 }
 
 // Function to handle book borrowing
 function borrowBook($book_id, $conn, $borrowerID) {
-    
     // Check if the book is already borrowed by the current student
     $sql_check = "SELECT * FROM borrowed_books WHERE bookID = ? AND studentID = ? AND return_date = '0000-00-00'";
     $stmt_check = mysqli_prepare($conn, $sql_check);
@@ -101,12 +127,14 @@ if (isset($_GET['logout'])) {
 if (isset($_POST['borrow'])) {
     $book_id = $_POST['book_id'];
     if (borrowBook($book_id, $conn, $studentID)) {
-        echo "<div class='alert alert-success'>Book Borrow Request wait for librarian approval!</div>";
+        echo "<div class='alert alert-success'>Book Borrow Request pending librarian approval!</div>";
+        // Refresh the search results after borrowing
         $searchTerm = $_POST['search'];
         $searchType = $_POST['searchType'];
-        $books = searchBooks($searchTerm);
+        $categoryID = $_POST['category'];
+        $books = searchBooks($searchTerm, $searchType, $categoryID);
     } else {
-        // echo "<div class='alert alert-danger'>Error borrowing book.</div>";
+        echo "<div class='alert alert-danger'>Error borrowing book or book is out of stock.</div>";
     }
 }
 ?>
@@ -205,7 +233,22 @@ if (isset($_POST['borrow'])) {
                                     <label>Search</label>
                                     <div class="input-group">
                                         <input type="text" class="form-control" name="search"
-                                            placeholder="Enter book title or author">
+                                            placeholder="Enter book title, author, or description">
+                                        <div class="input-group-append">
+                                            <select class="form-control" name="searchType">
+                                                <option value="title">Title</option>
+                                                <option value="author">Author</option>
+                                                <option value="description">Description</option>
+                                            </select>
+                                        </div>
+                                        <div class="input-group-append">
+                                            <select class="form-control" name="category">
+                                                <option value="0">All Categories</option>
+                                                <?php foreach ($categories as $category): ?>
+                                                    <option value="<?php echo $category['ID']; ?>"><?php echo htmlspecialchars($category['name']); ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
                                         <div class="input-group-append">
                                             <button type="submit" class="btn btn-primary" name="submit">Search</button>
                                         </div>
@@ -246,9 +289,10 @@ if (isset($_POST['borrow'])) {
                                                     value="<?php echo htmlspecialchars($_POST['search'] ?? ''); ?>">
                                                 <input type="hidden" name="searchType"
                                                     value="<?php echo htmlspecialchars($_POST['searchType'] ?? ''); ?>">
+                                                <input type="hidden" name="category"
+                                                    value="<?php echo htmlspecialchars($_POST['category'] ?? 0); ?>">
                                                 <button type="submit" class="btn btn-sm btn-primary"
                                                     name="borrow">Borrow</button>
-                                                    
                                             </form>
                                             <?php else: ?>
                                             <span class="text-danger">Out of Stock</span>
@@ -262,7 +306,6 @@ if (isset($_POST['borrow'])) {
                         </div>
                     </div>
                 </div>
-
 
                 <div id="borrowHistorySection" style="display: none;">
                     <div class="card">
@@ -282,15 +325,15 @@ if (isset($_POST['borrow'])) {
                                 </thead>
                                 <tbody>
                                     <?php
-                                    if ($result->num_rows > 0) {
-                                        while ($row = $result->fetch_assoc()) {
+                                    if ($result && mysqli_num_rows($result) > 0) {
+                                        while ($row = mysqli_fetch_assoc($result)) {
                                             $status = $row["Ispending"] ? "Pending" : "Approved";
                                             echo "<tr>
-                                                    <td>" . $row["title"] . "</td>
-                                                    <td>" . $row["author"] . "</td>
-                                                    <td>" . $row["issue_date"] . "</td>
-                                                    <td>" . $row["return_date"] . "</td>
-                                                    <td>" . $status . "</td>
+                                                    <td>" . htmlspecialchars($row["title"]) . "</td>
+                                                    <td>" . htmlspecialchars($row["author"]) . "</td>
+                                                    <td>" . htmlspecialchars($row["issue_date"]) . "</td>
+                                                    <td>" . htmlspecialchars($row["return_date"]) . "</td>
+                                                    <td>" . htmlspecialchars($status) . "</td>
                                                 </tr>";
                                         }
                                     } else {
@@ -308,17 +351,16 @@ if (isset($_POST['borrow'])) {
 
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-
-    if ( window.history.replaceState ) {
-        window.history.replaceState( null, null, window.location.href );
+    if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
     }
+
     // JavaScript code to handle sidebar link clicks
     document.getElementById('borrowBookLink').addEventListener('click', function() {
         showSection('borrowBookSection');
         this.classList.add('active');
         removeActiveClass(this);
     });
-
 
     document.getElementById('borrowHistoryLink').addEventListener('click', function() {
         showSection('borrowHistorySection');
