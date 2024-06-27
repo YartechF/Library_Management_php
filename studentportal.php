@@ -129,6 +129,7 @@ function borrowBook($book_id, $conn, $borrowerID) {
 
 if (isset($_GET['logout'])) {
     // Destroy the session and redirect to the login page
+    //fdsfsdfsd
     session_destroy();
     header("Location: index.php");
     exit();

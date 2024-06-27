@@ -70,7 +70,7 @@ require_once 'config.php';
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
 
-    <title>Register sa una ug admin sir</title>
+    <title>Register</title>
 </head>
 <body>
 
