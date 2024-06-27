@@ -27,6 +27,14 @@ $sql_total_students = "SELECT COUNT(*)-1 AS total_students FROM tbl_student";
 $result_total_students = mysqli_query($conn, $sql_total_students);
 $row_total_students = mysqli_fetch_assoc($result_total_students);
 $total_students_count = $row_total_students['total_students'];
+
+if (isset($_GET['logout'])) {
+    // Destroy the session and redirect to the login page
+    session_unset();
+    session_destroy();
+    header("Location: index.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>

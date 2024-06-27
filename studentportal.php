@@ -7,12 +7,23 @@ session_start();
 
 // Check if the user is logged in as a student
 if (!isset($_SESSION['student_id'])) {
-    header("Location: auth.php");
+    header("Location: index.php");
     exit();
 }
 
+
 // Get the student ID from the session
+
 $studentID = $_SESSION['student_id'];
+
+$sql_student = "SELECT lastname,firstname, img FROM tbl_student WHERE ID = ?";
+$stmt_student = mysqli_prepare($conn, $sql_student);
+mysqli_stmt_bind_param($stmt_student, 'i', $studentID);
+mysqli_stmt_execute($stmt_student);
+$result_student = mysqli_stmt_get_result($stmt_student);
+$student = mysqli_fetch_assoc($result_student);
+
+$pictureBase64 = base64_encode($student['img']);
 
 // Fetch the borrow history for the current student
 $sql = "SELECT b.title, b.author, bb.issue_date, bb.return_date, bb.Ispending
@@ -38,7 +49,7 @@ if ($result_categories->num_rows > 0) {
 // Function to search for books
 function searchBooks($searchTerm, $searchType, $categoryID) {
     global $conn;
-    $sql = "SELECT b.book_id, b.title, b.author, b.quantity_available, b.description, b.published
+    $sql = "SELECT c.name as category, b.book_id, b.title, b.author, b.quantity_available, b.description, b.published
             FROM books b
             LEFT JOIN tbl_category c ON b.categoryID = c.ID
             WHERE $searchType LIKE ?";
@@ -119,7 +130,7 @@ function borrowBook($book_id, $conn, $borrowerID) {
 if (isset($_GET['logout'])) {
     // Destroy the session and redirect to the login page
     session_destroy();
-    header("Location: auth.php");
+    header("Location: index.php");
     exit();
 }
 
@@ -147,6 +158,14 @@ if (isset($_POST['borrow'])) {
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
+    .student-details img {
+        width: 100px; /* Set the desired width */
+        height: 100px; /* Set the desired height */
+        object-fit: cover; /* Ensure the image covers the area without distortion */
+        border-radius: 50%; /* Make the image circular */
+        border: 2px solid #fff; /* Add a border if desired */
+        margin-bottom: 10px; /* Add some margin below the image */
+    }
     body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background-color: #f8f9fa;
@@ -204,25 +223,33 @@ if (isset($_POST['borrow'])) {
 <body>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-2 sidebar">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#" id="borrowBookLink">
-                            <i class="fas fa-book-open"></i> Borrow
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" id="borrowHistoryLink">
-                            <i class="fas fa-history"></i> History
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="?logout=true">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
-                    </li>
-                </ul>
-            </div>
+        <div class="col-md-2 sidebar">
+    <!-- Student details -->
+    <div class="student-details text-center mb-3">
+        <img src="data:image/jpeg;base64,<?php echo htmlspecialchars($pictureBase64); ?>" class="img-fluid rounded-circle mb-2" alt="Student Picture">
+        <h5><?php echo htmlspecialchars($student['firstname']);?> <?php echo htmlspecialchars($student['lastname']);?></h5>
+        <p>StudentID: <?php echo htmlspecialchars($studentID); ?></p>
+    </div>
+    <!-- Navigation links -->
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link active" href="#" id="borrowBookLink">
+                <i class="fas fa-book-open"></i> Borrow
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" id="borrowHistoryLink">
+                <i class="fas fa-history"></i> History
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="?logout=true">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </li>
+    </ul>
+</div>
+
             <div class="col-md-10 main-content">
                 <div id="borrowBookSection">
                     <h2>Borrow Book</h2>
@@ -264,6 +291,7 @@ if (isset($_POST['borrow'])) {
                                         <th>Quantity Available</th>
                                         <th>Description</th>
                                         <th>Published</th>
+                                        <th>Category</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -279,6 +307,7 @@ if (isset($_POST['borrow'])) {
                                         <td><?php echo htmlspecialchars($book['author']); ?></td>
                                         <td><?php echo htmlspecialchars($book['quantity_available']); ?></td>
                                         <td><?php echo htmlspecialchars($book['description']); ?></td>
+                                        <td><?php echo htmlspecialchars($book['category']); ?></td>
                                         <td><?php echo htmlspecialchars($book['published']); ?></td>
                                         <td>
                                             <?php if ($book['quantity_available'] > 0): ?>

@@ -33,6 +33,12 @@ if (isset($_GET['find_student'])) {
         $errorMessage = "Database connection not established.";
     }
 }
+if (isset($_GET['logout'])) {
+    // Destroy the session and redirect to the login page
+    session_destroy();
+    header("Location: index.php");
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

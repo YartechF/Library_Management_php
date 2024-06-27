@@ -82,7 +82,7 @@ $books = getAllBooks();
 if (isset($_GET['logout'])) {
     // Destroy the session and redirect to the login page
     session_destroy();
-    header("Location: auth.php");
+    header("Location: index.php");
     exit();
 }
 
